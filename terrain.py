@@ -36,17 +36,19 @@ class CoordinateHelper:
 
 class ElevationData:
 
-    def __init__(self, origin):
+    def __init__(self, origin, outfile):
         """
         Helper object for querying GeoGratis CDEM API
 
         :param origin: A tuple representing the lat-long of the point of origin
         """
         self.origin = origin
+        self.outfile = outfile
         self.base_url = 'http://geogratis.gc.ca/services/elevation/cdem/'
         self.profile_url = 'profile?path=LINESTRING({}, {})&steps=100'
         self.altitude_url = 'altitude?lat={}&lon={}'
         self.current_location_base = utm.from_latlon(*self.origin)
+        self.outfile = 'yam.txt'
 
     def get_extrapolated_elevation(self, point_1, point_2):
         request_url = self.base_url + self.profile_url.format(
@@ -83,7 +85,11 @@ class ElevationData:
         ]
         return points
 
-    def get_elevation_grid(self, east_steps, north_steps, scan_increment):
+    def get_elevation_grid(
+            self,
+            east_steps=20,
+            north_steps=20,
+            scan_increment=25):
         for east_index in range(east_steps):
             north_scan = [
                 self.get_elevation_at_point(point) for point in
@@ -93,8 +99,11 @@ class ElevationData:
                     scan_increment
                 )
             ]
-            print(north_scan)
-            CoordinateHelper.utm_with_offset(
+            with open(self.outfile, 'a') as outfile:
+                outfile.write('{},\n'.format(north_scan))
+                print(north_scan)
+
+            self.current_location_base = CoordinateHelper.utm_with_offset(
                 self.current_location_base,
                 scan_increment,
                 0
@@ -102,41 +111,15 @@ class ElevationData:
 
 
 
-
 def main():
-    scan_line_length = 1000
-    scan_line_increments = 25
     yam_lat_long = (51.125857, -115.119302)
-    yam = ElevationData(yam_lat_long)
-    # elevations = [
-    #     elevation.get_elevation_at_point(x) for x in
-    #     elevation.get_scan_line(
-    #         elevation.current_location_base,
-    #         scan_line_length,
-    #         scan_line_increments
-    #     )
-    # ]
-    yam.get_elevation_grid(40,20,25)
+    yam = ElevationData(yam_lat_long, 'yam.txt')
+    # yam.get_elevation_grid(
+    #     east_steps=400,
+    #     north_steps=100,
+    #     scan_increment=25
+    # )
 
-def test():
-    # Locate Mt Yamnuska
-    yam = (51.125857, -115.119302)
-
-    # Convert coordinates to UTM; break them up for some clarity
-    yam_utm = utm.from_latlon(*yam)
-    easting = yam_utm[0]
-    northing = yam_utm[1]
-
-    # Create UTM-looking tuples for utm module of a point and a point x meters north
-    x = 10
-    p1 = (easting, northing, yam_utm[2], yam_utm[3])
-    p2 = (easting, northing + x, yam_utm[2], yam_utm[3])
-
-    p1_lat_long = utm.to_latlon(*p1)
-    p2_lat_long = utm.to_latlon(*p2)
-
-    elevation = ElevationData(yam)
-    # elevation.get_extrapolated_elevation(p1_lat_long, p2_lat_long)
 
 if __name__ == '__main__':
     main()
