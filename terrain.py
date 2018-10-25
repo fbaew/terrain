@@ -113,10 +113,11 @@ class ElevationData:
 
 def main():
     yam_lat_long = (51.125857, -115.119302)
+    yam_lat_long = (51.123109, -115.120791)
     yam = ElevationData(yam_lat_long, 'yam.txt')
     yam.get_elevation_grid(
         east_steps=400,
-        north_steps=100,
+        north_steps=200,
         scan_increment=25
     )
 

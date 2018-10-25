@@ -1,9 +1,15 @@
-# Terrain Crawler
+# About 
 
-A tool to crawl over a specified area and provide a scanline of the elevation
-in that area for further munging.
+The idea is to develop an API for streaming elevation data at arbitrary
+locations in Canada... and soon, THE WORLD!
 
-The idea is to develop an API for streaming elevation data at arbitrary locations in Canada... and soon, THE WORLD!
+
+Right now, it's a tool to crawl over a specified area and provide a scanline of
+the elevation in that area for further munging.
+
+A separate API call is required for every single elevation point. This is very
+slow, and the government webmaster probably doesn't appreciate me slamming his
+endpoint without moderation.
 
 
 # Resources
