@@ -18,5 +18,6 @@ endpoint without moderation.
   * [Documnetation (PDF)](http://ftp.geogratis.gc.ca/pub/nrcan_rncan/elevation/cdem_mnec/doc/CDEM_en.pdf)
   * [CDEM Product Specs](http://ftp.geogratis.gc.ca/pub/nrcan_rncan/elevation/cdem_mnec/doc/archive/CDEM_product_specs_1_0.pdf)
   * [GeoTIFF Dataset](http://ftp.geogratis.gc.ca/pub/nrcan_rncan/elevation/cdem_mnec/)
-
+* [GDAL](https://gdal.org/gdal_tutorial.html), a Python library for GeoTIFF processing 
 * [Geotrellis](https://geotrellis.readthedocs.io/en/latest/index.html), a Scala library for fast GeoTIFF processing
+* [UTM CRS overview](https://www.maptools.com/tutorials/utm/quick_guide)
