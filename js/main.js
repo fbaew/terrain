@@ -16,7 +16,7 @@ var nodeMaterial = new THREE.MeshBasicMaterial( { color: 0x00cc00 } );
 var lineMaterial = new THREE.LineBasicMaterial( { color: 0x00f0ff});
 var viewframeGridMaterial = new THREE.LineBasicMaterial( { color: 0xff6600});
 var drawNodes = false;
-
+var animatedLineSpacing = 5;
 var wireframeResolutionFactor = 5;
 
 /*
@@ -190,12 +190,12 @@ var cameraPosition = {
         camera.rotation.z = -1.9899589029
     },
     animationView: function() {
-        camera.position.x = 846.5611339567095;
-        camera.position.y = 108.66775315099633;
-        camera.position.z = 412.57771389722257;
-        camera.rotation.x = -0.2575382917523527;
-        camera.rotation.y = 1.1039709944786478;
-        camera.rotation.z = 0.231006510031
+        camera.position.x = 220.7605568238203;
+        camera.position.y = 10.507774462181791;
+        camera.position.z = -921.8726416009445;
+        camera.rotation.x = -3.130194853884681;
+        camera.rotation.y = 0.23502878690842438;
+        camera.rotation.z = 3.138938328205593;
     }
 }
 
@@ -251,23 +251,25 @@ function animateCamera() {
 ------------------------------------------------------- */ 
 
 // Initialize viewframe
-var animationXIndex = 0;
 
 var viewframeSize = {
-    "east": 50, //easting
-    "north": 50, //northing
+    "east": 400, //easting
+    "north":200, //northing
 }
-var blankEastScan = Array(viewframeSize.east).fill(-heightOffset * heightFactor)
-var viewframeData = Array(viewframeSize.north).fill(blankEastScan)
-//drawPlot(viewframeData, viewframeGridMaterial);
 
 var draw = true;
 
 function createViewframe(frameSize) {
     var frame = {
+        "size": frameSize,
         "pointGrid": [],
         "rootNode": new THREE.Mesh( new THREE.SphereGeometry(1,1,1), new THREE.MeshBasicMaterial({color: 0xff0000})),
-        "geometry": []
+        "geometry": [],
+        "position": {
+            "east":frameSize.east,
+            "north":frameSize.north
+        }
+
     }
 
 //    frame.rootNode.visible = false;
@@ -278,48 +280,54 @@ function createViewframe(frameSize) {
            eastScanLinePoints.push(
                new THREE.Vector3(
                     east * nodeSpacingFactor,
-                    500,
+                    500, //initialize all points at an arbitrary height
                     north * nodeSpacingFactor
                )
            );
         }
         frame.pointGrid.push(eastScanLinePoints);
 
-        var eastScanLineGeometry = new THREE.Geometry();
-        eastScanLineGeometry.vertices = eastScanLinePoints;
-        var eastScanLine = new THREE.Line(eastScanLineGeometry, new THREE.MeshBasicMaterial({color: 0x00ff00}));
-        frame.geometry.push(eastScanLine)
-        frame.rootNode.add(eastScanLine)
+        if (east % animatedLineSpacing == 0) {
+            var eastScanLineGeometry = new THREE.Geometry();
+            eastScanLineGeometry.vertices = eastScanLinePoints;
+            var eastScanLine = new THREE.Line(eastScanLineGeometry, new THREE.MeshBasicMaterial({color: 0x00ff00}));
+            frame.geometry.push(eastScanLine)
+            frame.rootNode.add(eastScanLine)
+         }
     }
     return frame;
 }
 
 function stepViewFrameData(frame) {
     frame.pointGrid.push(frame.pointGrid.shift());
+
+    frame.position.east++;
+
+
     frame.pointGrid.forEach(function updateScanLine(eastScanLine, eastIndex) {
         eastScanLine.forEach(function updatePoint(point, northIndex) {
             frame.pointGrid[eastIndex][northIndex].x = eastIndex * nodeSpacingFactor;
             frame.pointGrid[eastIndex][northIndex].z = northIndex * nodeSpacingFactor;
         })
     });
+
+    frame.geometry.forEach(function recalculateLine(line, index) {
+        line.geometry.dynamic = true;
+        line.geometry.verticesNeedUpdate = true;
+    })
 }
 
-function initializeGroundAnimation() {
-    var viewframe = createViewframe(viewframeSize)
-    for (var east = 0; east < mapEastWidth; east++) {
-    }
+function initializeGroundAnimation(mapData, frame) {
+    frame.pointGrid.forEach(function setScanLine(eastScanLine, east) {
+        eastScanLine.forEach(function setPointValue(height, north) {
+            frame.pointGrid[east][north].y = (mapData[east][north] + heightOffset) * heightFactor
+        })
+    })
+    stepViewFrameData(frame)
 }
 
-function animateTopology() {
-//    var previousFrame = scene.getObjectByName("latest-terrain");
-//    
-//    if (draw) {
-//
-//        previousFrame.geometry.dispose();
-//        scene.remove(previousFrame);
-//        drawPlot(viewframeData);
-//        draw = false;
-//    }
+function animateTopology(frame) {
+    stepViewFrameData(frame)
 }
 
 
@@ -342,10 +350,12 @@ var render = function () {
 	requestAnimationFrame( render );
 	renderer.render(scene, camera);
 //    animateCamera();
-//    animateTopology();
+    animateTopology(scanningView);
 };
 
-
+var scanningView = createViewframe(viewframeSize)
+scene.add(scanningView.rootNode)
+initializeGroundAnimation(yamData, scanningView)
 
 render();
 
@@ -367,7 +377,5 @@ var camDump = function () {
     console.log(logger.value);
 }
 //yamData = sampleData;
-var scanningView = createViewframe(viewframeSize)
-scene.add(scanningView.rootNode)
 
 //drawPlot(yamData, lineMaterial);
