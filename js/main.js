@@ -13,8 +13,11 @@ var cameraSpeedFactor = .1
 var nodeGeometry = new THREE.SphereGeometry( .2, .2, .2 );
 var color = Math.random()*16777215;
 var nodeMaterial = new THREE.MeshBasicMaterial( { color: 0x00cc00 } );
-var lineMaterial = new THREE.LineBasicMaterial( { color: 0xff6600 });
+var lineMaterial = new THREE.LineBasicMaterial( { color: 0x00f0ff});
+var viewframeGridMaterial = new THREE.LineBasicMaterial( { color: 0xff6600});
 var drawNodes = false;
+
+var wireframeResolutionFactor = 5;
 
 /*
     Terrain rendering configuration
@@ -22,7 +25,7 @@ var drawNodes = false;
 
 var nodeSpacingFactor = 2
 var heightOffset = -1800
-var heightFactor = 0.5
+var heightFactor = .8
 
 
 
@@ -81,22 +84,6 @@ var viewport = document.getElementById("viewport")
 viewport.appendChild( renderer.domElement );
 
 
-
-/* -------------------------------------------------------
-Dummy routine illustrating how to add a single object 
-to the scene. Start with this.
-------------------------------------------------------- */ 
-var dotShape = new THREE.Mesh( nodeGeometry, nodeMaterial);
-dotShape.position.set(10, 0, 0); //x, y, z
-scene.add( this.dotShape );
-
-
-for (var i=0; i < 10; i++) {
-    console.log('placing node')
-    placeNodeAtSpot(0, i*10, 0, this.nodeMaterial);
-}
-
-
 /* -------------------------------------------------------
     Terrain drawing
 ------------------------------------------------------- */ 
@@ -106,9 +93,15 @@ function placeNodeAtSpot(x, y, z, material) {
     dotShape.position.set(x, y, z);
     scene.add( dotShape );
 }
-function main() {
-    for (var easting in yamData) {
-        for (var northing in yamData[easting]) {
+function drawPlot(data, material) {
+    var currentDisplayGeometry = new THREE.SphereGeometry(1,1,1);
+    var currentDisplayMaterial = material;
+    var currentDisplayTerrain = new THREE.Mesh( currentDisplayGeometry, currentDisplayMaterial);
+    currentDisplayTerrain.position.set(0,0,0);
+    
+
+    for (var easting in data) {
+        for (var northing in data[easting]) {
 
 
             /* -------
@@ -117,7 +110,7 @@ function main() {
 
             placeNodeAtSpot(
                 easting * nodeSpacingFactor, 
-                (yamData[easting][northing] + heightOffset) * heightFactor,
+                (data[easting][northing] + heightOffset) * heightFactor,
                 northing * nodeSpacingFactor,
                 this.nodeMaterial
             ) 
@@ -127,13 +120,13 @@ function main() {
             Draw north/south lines
             ------- */ 
 
-            if (northing > 1 && easting % 10 == 0) {
+            if (northing > 1 && easting % wireframeResolutionFactor == 0) {
                 var lineGeometry = new THREE.Geometry();
     
                 lineGeometry.vertices.push(
                     new THREE.Vector3(
                         easting * nodeSpacingFactor,
-                        (yamData[easting][northing] + heightOffset) * heightFactor,
+                        (data[easting][northing] + heightOffset) * heightFactor,
                         northing * nodeSpacingFactor
                     )
                 )
@@ -141,36 +134,38 @@ function main() {
                 lineGeometry.vertices.push(
                     new THREE.Vector3(
                         easting * nodeSpacingFactor,
-                        (yamData[easting][northing-1] + heightOffset) * heightFactor,
+                        (data[easting][northing-1] + heightOffset) * heightFactor,
                         (northing - 1) * nodeSpacingFactor
                     )
                 )
-                var line = new THREE.Line(lineGeometry, lineMaterial);
-                scene.add(line);
+                var line = new THREE.Line(lineGeometry, material);
+                currentDisplayTerrain.add(line);
             }
-            if (easting > 1 && northing %10 == 0) {
+            if (easting > 1 && northing % wireframeResolutionFactor  == 0) {
                 lineGeometry = new THREE.Geometry();
 
                 lineGeometry.vertices.push(
                     new THREE.Vector3(
                         easting * nodeSpacingFactor,
-                        (yamData[easting][northing] + heightOffset) * heightFactor,
+                        (data[easting][northing] + heightOffset) * heightFactor,
                         northing * nodeSpacingFactor
                     )
                 )
                 lineGeometry.vertices.push(
                     new THREE.Vector3(
                         (easting - 1) * nodeSpacingFactor,
-                        (yamData[easting-1][northing] + heightOffset) * heightFactor,
+                        (data[easting-1][northing] + heightOffset) * heightFactor,
                         northing * nodeSpacingFactor
                     )
                 )
-                var line = new THREE.Line(lineGeometry, lineMaterial);
-                scene.add(line);
+                var line = new THREE.Line(lineGeometry, material);
+                currentDisplayTerrain.add(line);
 
             }
         }
     }
+    currentDisplayTerrain.name = "latest-terrain";
+    scene.add(currentDisplayTerrain);
 }
 
 /* -------------------------------------------------------
@@ -250,6 +245,41 @@ function animateCamera() {
     )
 }
 
+
+/* -------------------------------------------------------
+    Terrain animation
+------------------------------------------------------- */ 
+
+// Initialize viewframe
+var animationXIndex = 0;
+
+var viewframeSize = {
+    "east": 50, //easting
+    "north": 50, //northing
+}
+var blankEastScan = Array(viewframeSize.east).fill(-heightOffset)
+var viewframeData = Array(viewframeSize.north).fill(blankEastScan)
+drawPlot(viewframeData, viewframeGridMaterial);
+
+var draw = true;
+
+function createViewframe(frameSize) {
+    
+}
+
+function animateTopology() {
+//    var previousFrame = scene.getObjectByName("latest-terrain");
+//    
+//    if (draw) {
+//
+//        previousFrame.geometry.dispose();
+//        scene.remove(previousFrame);
+//        drawPlot(viewframeData);
+//        draw = false;
+//    }
+}
+
+
 /* -------------------------------------------------------
     Mouse & Touch camera controls
 ------------------------------------------------------- */ 
@@ -269,6 +299,7 @@ var render = function () {
 	requestAnimationFrame( render );
 	renderer.render(scene, camera);
     animateCamera();
+//    animateTopology();
 };
 
 
@@ -293,4 +324,5 @@ var camDump = function () {
     console.log(logger.value);
 }
 //yamData = sampleData;
-main()
+
+drawPlot(yamData, lineMaterial);
