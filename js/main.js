@@ -257,14 +257,57 @@ var viewframeSize = {
     "east": 50, //easting
     "north": 50, //northing
 }
-var blankEastScan = Array(viewframeSize.east).fill(-heightOffset)
+var blankEastScan = Array(viewframeSize.east).fill(-heightOffset * heightFactor)
 var viewframeData = Array(viewframeSize.north).fill(blankEastScan)
-drawPlot(viewframeData, viewframeGridMaterial);
+//drawPlot(viewframeData, viewframeGridMaterial);
 
 var draw = true;
 
 function createViewframe(frameSize) {
-    
+    var frame = {
+        "pointGrid": [],
+        "rootNode": new THREE.Mesh( new THREE.SphereGeometry(1,1,1), new THREE.MeshBasicMaterial({color: 0xff0000})),
+        "geometry": []
+    }
+
+//    frame.rootNode.visible = false;
+
+    for (var east = 0; east < frameSize.east; east++) {
+        var eastScanLinePoints = []
+        for (var north = 0; north < frameSize.north; north++) {
+           eastScanLinePoints.push(
+               new THREE.Vector3(
+                    east * nodeSpacingFactor,
+                    500,
+                    north * nodeSpacingFactor
+               )
+           );
+        }
+        frame.pointGrid.push(eastScanLinePoints);
+
+        var eastScanLineGeometry = new THREE.Geometry();
+        eastScanLineGeometry.vertices = eastScanLinePoints;
+        var eastScanLine = new THREE.Line(eastScanLineGeometry, new THREE.MeshBasicMaterial({color: 0x00ff00}));
+        frame.geometry.push(eastScanLine)
+        frame.rootNode.add(eastScanLine)
+    }
+    return frame;
+}
+
+function stepViewFrameData(frame) {
+    frame.pointGrid.push(frame.pointGrid.shift());
+    frame.pointGrid.forEach(function updateScanLine(eastScanLine, eastIndex) {
+        eastScanLine.forEach(function updatePoint(point, northIndex) {
+            frame.pointGrid[eastIndex][northIndex].x = eastIndex * nodeSpacingFactor;
+            frame.pointGrid[eastIndex][northIndex].z = northIndex * nodeSpacingFactor;
+        })
+    });
+}
+
+function initializeGroundAnimation() {
+    var viewframe = createViewframe(viewframeSize)
+    for (var east = 0; east < mapEastWidth; east++) {
+    }
 }
 
 function animateTopology() {
@@ -298,7 +341,7 @@ cameraPosition.animationView();
 var render = function () {
 	requestAnimationFrame( render );
 	renderer.render(scene, camera);
-    animateCamera();
+//    animateCamera();
 //    animateTopology();
 };
 
@@ -324,5 +367,7 @@ var camDump = function () {
     console.log(logger.value);
 }
 //yamData = sampleData;
+var scanningView = createViewframe(viewframeSize)
+scene.add(scanningView.rootNode)
 
-drawPlot(yamData, lineMaterial);
+//drawPlot(yamData, lineMaterial);
