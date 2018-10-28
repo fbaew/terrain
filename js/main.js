@@ -263,7 +263,7 @@ function createViewframe(frameSize) {
     var frame = {
         "size": frameSize,
         "pointGrid": [],
-        "rootNode": new THREE.Mesh( new THREE.SphereGeometry(1,1,1), new THREE.MeshBasicMaterial({color: 0xff0000})),
+        "rootNode": new THREE.Mesh( new THREE.SphereGeometry(1,1,1), new THREE.MeshBasicMaterial()),
         "geometry": [],
         "position": {
             "east":frameSize.east,
@@ -290,7 +290,7 @@ function createViewframe(frameSize) {
         if (east % animatedLineSpacing == 0) {
             var eastScanLineGeometry = new THREE.Geometry();
             eastScanLineGeometry.vertices = eastScanLinePoints;
-            var eastScanLine = new THREE.Line(eastScanLineGeometry, new THREE.MeshBasicMaterial({color: 0x00ff00}));
+            var eastScanLine = new THREE.Line(eastScanLineGeometry, new THREE.MeshBasicMaterial({color: 0xff6600}));
             frame.geometry.push(eastScanLine)
             frame.rootNode.add(eastScanLine)
          }
