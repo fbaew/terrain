@@ -120,7 +120,7 @@ class ElevationData:
 
 def main():
     raster_file = 'data/DEM.tif'
-    origin = (-115.58552, 51.77898)
+    origin = (51.77898, -115.58552)
     elevation = ElevationData(raster_file, origin, 'output.txt')
     elevation.get_elevation_grid(
         east_steps=400,
