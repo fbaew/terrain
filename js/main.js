@@ -30,8 +30,8 @@ var heightFactor = .5
 // Initialize viewframe
 
 var viewframeSize = {
-    "east": 400, //easting
-    "north":400, //northing
+    "east": 900, //easting
+    "north":1000, //northing
 }
 
 
