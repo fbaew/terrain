@@ -49,7 +49,6 @@ class ElevationData:
         self.profile_url = 'profile?path=LINESTRING({}, {})&steps=100'
         self.altitude_url = 'altitude?lat={}&lon={}'
         self.current_location_base = utm.from_latlon(*self.origin)
-        self.outfile = 'yam.txt'
         self.raster = rasterio.open(geotiff)
 
     def get_extrapolated_elevation(self, point_1, point_2):
@@ -59,15 +58,6 @@ class ElevationData:
         )
         r = requests.get(request_url)
         print(r.text)
-
-    # def get_elevation_at_point(self, utm_point):
-    #     point = utm.to_latlon(*utm_point)
-    #     request_url = self.base_url + self.altitude_url.format(
-    #         *point
-    #     )
-    #     r = requests.get(request_url)
-    #     data = json.loads(r.text)
-    #     return data['altitude']
 
     def get_elevation_at_point(self, utm_point):
         point = utm.to_latlon(*utm_point)
