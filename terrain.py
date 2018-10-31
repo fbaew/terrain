@@ -51,14 +51,6 @@ class ElevationData:
         self.current_location_base = utm.from_latlon(*self.origin)
         self.raster = rasterio.open(geotiff)
 
-    def get_extrapolated_elevation(self, point_1, point_2):
-        request_url = self.base_url + self.profile_url.format(
-            CoordinateHelper.format_lat_long(point_1),
-            CoordinateHelper.format_lat_long(point_2)
-        )
-        r = requests.get(request_url)
-        print(r.text)
-
     def get_elevation_at_point(self, utm_point):
         point = utm.to_latlon(*utm_point)
         point_rev = (point[1], point[0])
@@ -99,7 +91,6 @@ class ElevationData:
             ]
             with open(self.outfile, 'a') as outfile:
                 outfile.write('{},\n'.format(north_scan))
-                print(north_scan)
 
             self.current_location_base = CoordinateHelper.utm_with_offset(
                 self.current_location_base,
@@ -114,7 +105,7 @@ def main():
     elevation = ElevationData(raster_file, origin, 'output.txt')
     elevation.get_elevation_grid(
         east_steps=400,
-        north_steps=400,
+        north_steps=1000,
         scan_increment=25
     )
 
