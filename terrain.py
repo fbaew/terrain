@@ -72,7 +72,7 @@ class ElevationData:
     def get_elevation_at_point(self, utm_point):
         point = utm.to_latlon(*utm_point)
         point_rev = (point[1], point[0])
-        return [elevation for elevation in self.raster.sample([point_rev])][0]
+        return [elevation for elevation in self.raster.sample([point_rev])][0][0]
 
 
 
