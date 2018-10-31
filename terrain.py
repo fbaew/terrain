@@ -80,6 +80,8 @@ class ElevationData:
             east_steps=20,
             north_steps=20,
             scan_increment=25):
+        with open(self.outfile, 'w') as outfile:
+            outfile.write('var yamData = [\n')
         for east_index in range(east_steps):
             north_scan = [
                 self.get_elevation_at_point(point) for point in
@@ -97,6 +99,8 @@ class ElevationData:
                 scan_increment,
                 0
             )
+        with open(self.outfile, 'a') as outfile:
+            outfile.write(']\n')
 
 
 def main():
@@ -104,7 +108,7 @@ def main():
     origin = (51.77898, -115.58552)
     elevation = ElevationData(raster_file, origin, 'output.txt')
     elevation.get_elevation_grid(
-        east_steps=400,
+        east_steps=10000,
         north_steps=1000,
         scan_increment=25
     )
