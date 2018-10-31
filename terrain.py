@@ -1,6 +1,7 @@
 import utm
 import requests
 import json
+import rasterio
 
 
 class CoordinateHelper:
@@ -36,7 +37,7 @@ class CoordinateHelper:
 
 class ElevationData:
 
-    def __init__(self, origin, outfile):
+    def __init__(self, geotiff, origin, outfile):
         """
         Helper object for querying GeoGratis CDEM API
 
@@ -49,6 +50,7 @@ class ElevationData:
         self.altitude_url = 'altitude?lat={}&lon={}'
         self.current_location_base = utm.from_latlon(*self.origin)
         self.outfile = 'yam.txt'
+        self.raster = rasterio.open(geotiff)
 
     def get_extrapolated_elevation(self, point_1, point_2):
         request_url = self.base_url + self.profile_url.format(
@@ -58,14 +60,20 @@ class ElevationData:
         r = requests.get(request_url)
         print(r.text)
 
+    # def get_elevation_at_point(self, utm_point):
+    #     point = utm.to_latlon(*utm_point)
+    #     request_url = self.base_url + self.altitude_url.format(
+    #         *point
+    #     )
+    #     r = requests.get(request_url)
+    #     data = json.loads(r.text)
+    #     return data['altitude']
+
     def get_elevation_at_point(self, utm_point):
         point = utm.to_latlon(*utm_point)
-        request_url = self.base_url + self.altitude_url.format(
-            *point
-        )
-        r = requests.get(request_url)
-        data = json.loads(r.text)
-        return data['altitude']
+        point_rev = (point[1], point[0])
+        return [elevation for elevation in self.raster.sample([point_rev])][0]
+
 
 
     def get_scan_line(self, line_origin, length, spacing):
@@ -110,17 +118,17 @@ class ElevationData:
             )
 
 
-
 def main():
-    yam_lat_long = (51.125857, -115.119302)
-    yam_lat_long = (51.123109, -115.120791)
-    yam = ElevationData(yam_lat_long, 'yam.txt')
-    yam.get_elevation_grid(
+    raster_file = 'data/DEM.tif'
+    origin = (-115.58552, 51.77898)
+    elevation = ElevationData(raster_file, origin, 'output.txt')
+    elevation.get_elevation_grid(
         east_steps=400,
-        north_steps=200,
+        north_steps=400,
         scan_increment=25
     )
 
+    elevation.raster.close()
 
 if __name__ == '__main__':
     main()
