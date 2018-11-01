@@ -19,8 +19,8 @@ var drawNodes = false;
 var animatedLineSpacing = 1;
 var wireframeResolutionFactor = 10;
 
-var scanTerrain = false;
-var cameraOrbits = true;
+var scanTerrain = true;
+var cameraOrbits = false;
 
 /*
     Terrain rendering configuration
