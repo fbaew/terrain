@@ -16,8 +16,8 @@ var nodeMaterial = new THREE.MeshBasicMaterial( { color: 0x00cc00 } );
 var lineMaterial = new THREE.LineBasicMaterial( { color: 0x00f0ff});
 var viewframeGridMaterial = new THREE.LineBasicMaterial( { color: 0xff6600});
 var drawNodes = false;
-var animatedLineSpacing = 5;
-var wireframeResolutionFactor = 5;
+var animatedLineSpacing = 1;
+var wireframeResolutionFactor = 1;
 
 /*
     Terrain rendering configuration
@@ -25,13 +25,13 @@ var wireframeResolutionFactor = 5;
 
 var nodeSpacingFactor = 2
 var heightOffset = -1800
-var heightFactor = .5
+var heightFactor = .2
 
 // Initialize viewframe
 
 var viewframeSize = {
-    "east": 900, //easting
-    "north":1000, //northing
+    "east": 500, //easting
+    "north":500, //northing
 }
 
 
@@ -251,6 +251,20 @@ function createViewframe(frameSize) {
             frame.rootNode.add(eastScanLine)
          }
     }
+
+//    frame.pointGrid[0].forEach(function spawnNorthGridLines(item, northIndex) {
+//        northScanLinePoints = []
+//        if (northIndex % animatedLineSpacing == 0) {
+//            frame.pointGrid.forEach(function populateNorthLine(eastline, eastIndex) {
+//                northScanLinePoints.push(frame.pointGrid[eastIndex, northIndex]);
+//            })
+//        }
+//            var northScanLineGeometry = new THREE.Geometry();
+//            northScanLineGeometry.vertices = northScanLinePoints;
+//            var northScanLine = new THREE.Line(northScanLineGeometry, new THREE.MeshBasicMaterial({color: 0x0066ff}));
+//            frame.geometry.push(northScanLine)
+//            frame.rootNode.add(northScanLine)
+//    })
     return frame;
 }
 
