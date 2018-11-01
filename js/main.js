@@ -154,12 +154,12 @@ var cameraPosition = {
         camera.rotation.z = -1.9899589029
     },
     animationView: function() {
-        camera.position.x = 220.7605568238203;
-        camera.position.y = 10.507774462181791;
-        camera.position.z = -921.8726416009445;
-        camera.rotation.x = -3.130194853884681;
-        camera.rotation.y = 0.23502878690842438;
-        camera.rotation.z = 3.138938328205593;
+        camera.position.x = 297.69378716974046;
+        camera.position.y = 827.2044552181426;
+        camera.position.z = -831.7328683210544;
+        camera.rotation.x = -1.9286537745222978;
+        camera.rotation.y = 0.571420605232088;
+        camera.rotation.z = 2.1757653755814728;
     }
 }
 
