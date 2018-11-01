@@ -17,7 +17,10 @@ var lineMaterial = new THREE.LineBasicMaterial( { color: 0x00f0ff});
 var viewframeGridMaterial = new THREE.LineBasicMaterial( { color: 0xff6600});
 var drawNodes = false;
 var animatedLineSpacing = 1;
-var wireframeResolutionFactor = 1;
+var wireframeResolutionFactor = 10;
+
+var scanTerrain = false;
+var cameraOrbits = true;
 
 /*
     Terrain rendering configuration
@@ -168,38 +171,39 @@ var cameraPosition = {
 /* -------------------------------------------------------
     Camera Animation
 ------------------------------------------------------- */ 
-var cameraPadding = 5;
+function configureCamera() {
+    var cameraPadding = 5;
+    var mapEastWidth = scanningView.size.east;
+    var mapNorthWidth = scanningView.size.north;
+    var eastMidpoint = (mapEastWidth/2) * nodeSpacingFactor;
+    var northMidpoint = (mapNorthWidth/2) * nodeSpacingFactor;
+    var cameraSpeed = nodeSpacingFactor * cameraSpeedFactor;
+    var cameraOriginWidth = eastMidpoint + cameraPadding;
 
-var mapEastWidth = yamData.length;
-var mapNorthWidth = yamData[0].length;
-var eastMidpoint = (mapEastWidth/2) * nodeSpacingFactor;
-var northMidpoint = (mapNorthWidth/2) * nodeSpacingFactor;
-var cameraSpeed = nodeSpacingFactor * cameraSpeedFactor;
-var cameraOriginWidth = eastMidpoint + cameraPadding;
+    if (northMidpoint > eastMidpoint) {
+        cameraOriginWidth = northMidpoint + cameraPadding;
+    }
 
-if (northMidpoint > eastMidpoint) {
-    cameraOriginWidth = northMidpoint + cameraPadding;
+    cameraOriginWidth = 10;
+
+    var cameraOriginGeometry = new THREE.SphereGeometry(
+        cameraOriginWidth,
+        32,
+        32
+    );
+    var cameraOriginMaterial = new THREE.MeshBasicMaterial( {color: 0xffff00} );
+    var cameraOrigin = new THREE.Mesh( cameraOriginGeometry, cameraOriginMaterial);
+    cameraOrigin.position.set(
+        eastMidpoint,
+        0,
+        northMidpoint
+    );
+    cameraOrigin.add(camera);
+    cameraOrigin.visible = false;
+    camera.lookAt(cameraOrigin);
+    scene.add(cameraOrigin);
+    return cameraOrigin;
 }
-
-cameraOriginWidth = 10;
-
-var cameraOriginGeometry = new THREE.SphereGeometry(
-    cameraOriginWidth,
-    32,
-    32
-);
-var cameraOriginMaterial = new THREE.MeshBasicMaterial( {color: 0xffff00} );
-var cameraOrigin = new THREE.Mesh( cameraOriginGeometry, cameraOriginMaterial);
-cameraOrigin.position.set(
-    eastMidpoint,
-    0,
-    northMidpoint 
-);
-cameraOrigin.add(camera);
-cameraOrigin.visible = false;
-camera.lookAt(cameraOrigin);
-scene.add(cameraOrigin);
-
 
 function animateCamera() {
 //    camera.position.x= camera.position.x + cameraSpeed; // Pan/track
@@ -252,19 +256,6 @@ function createViewframe(frameSize) {
          }
     }
 
-//    frame.pointGrid[0].forEach(function spawnNorthGridLines(item, northIndex) {
-//        northScanLinePoints = []
-//        if (northIndex % animatedLineSpacing == 0) {
-//            frame.pointGrid.forEach(function populateNorthLine(eastline, eastIndex) {
-//                northScanLinePoints.push(frame.pointGrid[eastIndex, northIndex]);
-//            })
-//        }
-//            var northScanLineGeometry = new THREE.Geometry();
-//            northScanLineGeometry.vertices = northScanLinePoints;
-//            var northScanLine = new THREE.Line(northScanLineGeometry, new THREE.MeshBasicMaterial({color: 0x0066ff}));
-//            frame.geometry.push(northScanLine)
-//            frame.rootNode.add(northScanLine)
-//    })
     return frame;
 }
 
@@ -319,11 +310,12 @@ cameraPosition.animationView();
 var render = function () {
 	requestAnimationFrame( render );
 	renderer.render(scene, camera);
-//    animateCamera();
-    animateTopology(scanningView);
+    if (cameraOrbits) { animateCamera(); }
+    if (scanTerrain) { animateTopology(scanningView); }
 };
 
 var scanningView = createViewframe(viewframeSize)
+var cameraOrigin = configureCamera();
 scene.add(scanningView.rootNode)
 initializeGroundAnimation(yamData, scanningView)
 
